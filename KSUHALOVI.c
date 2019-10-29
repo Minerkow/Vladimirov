@@ -1,42 +1,47 @@
 #include <stdio.h>
 
-int main() {
-    int arr[] = {3, 3, 4, 2, 4, 4, 2, 4};
-    printf("|%d|", majority_element(arr, 8));
+int main()
+{
+        int arr[] = {3, 3, 4, 2, 4, 4, 2};
+        printf("Answer - %d", majority_element(arr, 7));
+        return 0;
 }
 
-int majority_element(int *parr, int len) {
-    int l = len / 2, L = len, a = 0, b = 0, p = -1;
-    if (len == 2)
-    {if (*parr == *(parr + 1))
-            return *parr;
-        return -1;}
-    if (len == 3) {
-        if (*parr == *(parr + 1)) return *parr;
-        if (*parr == *(parr + 2)) return *parr;
-        if (*(parr + 1) == *(parr + 2)) return *(parr + 1);
-        return -1;
-    }
-    if (len > 3)
-    {a = majority_element(parr, l);
-    printf("%d ", a);
-    b = majority_element((parr + l), (l + len % 2));
-    printf("%d\n", b);}
-    if (len == 8) return max_element(parr, a, b, len);
-
+int majority_element (int* parr, int len)
+{
+        if (len == 1)
+                return *parr;
+        if (len == 2)
+        {
+                if (*parr == *(parr + 1))
+                        return *parr;
+                        else
+                                return -1;
+        }
+        int a = majority_element(parr, len/2);
+        int b = majority_element(parr + len/2 , len - len/2);
+        if (a == -1)
+                return b;
+        if (b == -1)
+                return a;
+        if (a != -1 && b != -1)
+        return max(parr, len , a, b);
 }
 
-int max_element(int *parr, int a, int b, int len) {
-    int a1 = 0, b1 = 0;
-    printf("|%d %d|", a, b);
-    for (int i = 0; i < len; i++) {
-        if (*(parr + i) == a)
-            a1 += 1;
-        if (*(parr + i) == b)
-            b1 += 1;
-    }
-    if (a1 >= b1)
-        return a;
-    if (a1 < b1)
-        return b;
+int max(int* parr, int len, int a, int b)
+{
+        int k = 0, p = 0;
+        for (int i = 0; i < len; i++)
+        {
+                if (parr[i] == a)
+                        k++;
+                if (parr[i] == b)
+                        p++;
+        }
+        if (k >= p)
+                return a;
+                        else return b;
 }
+
+
+
