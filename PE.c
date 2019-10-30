@@ -1,29 +1,44 @@
-#include <stdio.h>
 
-int main() {
-    int arr[] = {3, 3, 9, 9, 9, 3};
-    printf("%d", majority_element(arr, 6));
+
+int maxim(int* parr, int len, int a, int b)
+{
+    int k = 0, p = 0;
+    for (int i = 0; i < len; i++)
+    {
+        if (parr[i] == a)
+            k++;
+        if (parr[i] == b)
+            p++;
+    }
+    if (k < p) return b;
+    if (k == p) return a;
+
+    return a;
 }
 
-int majority_element(int *parr, int len) {
-    int l = len/2;
-    if (l == 1)
+
+int majority_element (const int* parr, int len)
+{
+    int a, b;
+    if (len == 1)
+        return *parr;
+    if (len == 2)
+    {
         if (*parr == *(parr + 1))
             return *parr;
-        else return -1;
-    int L = len;
-    int a = majority_element(parr, len / 2);
-    int b = majority_element((parr + len / 2), (len / 2 + len % 2));
-    if (l == 0)
-        return max_element(parr, a, b, L);
-}
-
-int max_element(int *parr, int a, int b, int len) {
-    int a1, b1;
-    for (int i = 0; i < len; i++) {
-        if ( parr[i] = a ) a1 += 1;
-        if ( parr[i] = b ) b1 += 1;
+        else
+            return -1;
     }
-    if (a1 >= b1) return a1;
-    if (a1 < b1) return b1;
+    a = majority_element(parr, len/2);
+    b = majority_element(parr + len/2 , len - len/2);
+    if (a == -1)
+    {
+        return b;
+    }
+    if (b == -1)
+    {
+        return a;
+    }
+
+    return maxim(parr, len , a, b);
 }
