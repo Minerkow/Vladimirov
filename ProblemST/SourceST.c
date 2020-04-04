@@ -2,6 +2,10 @@
 // Created by bibi on 18.03.2020.
 //
 
+//
+// Created by bibi on 14.03.2020.
+//
+
 #include "HeaderLX.h"
 
 static struct lexem_t get_cur_lexem (int i, struct lex_array_t* ptr);
@@ -89,12 +93,6 @@ struct node_t* Expr(int* i)
         return expr_left;
     (*i)++;
 
-    if (is_brace(*i) == RBRAC)
-    {
-        printf("Extra brace");
-        exit(3);
-    }
-
     if (get_cur_lexem(*i, NULL).kind == OP) {
         if (is_add_sub(*i)) {
             node = Create_Node();
@@ -123,11 +121,6 @@ struct node_t* Mult(int* i)
     if (*i == get_cur_size(NULL) - 1)
         return mult_left;
     (*i)++;
-    if (get_cur_lexem(*i, NULL).kind == NUM)
-    {
-        printf("Two numbers in a row");
-        exit(4);
-    }
     if (get_cur_lexem(*i, NULL).kind == OP) {
         if (is_mul_div(*i)) {
             node = Create_Node();
@@ -155,20 +148,28 @@ struct node_t* Term (int* i)
     {
         node = Create_Node();
         node->lexem = get_cur_lexem(*i, NULL);
-        /*if (larr->size - 1 != (*i))
-            (*i)++;*/
+        if (get_cur_lexem(*i + 1, NULL).kind == NUM)
+        {
+            printf("Two numbers in a row");
+            exit(9);
+        }
         return node;
     }
+
     if(is_brace(*i) == LBRAC)
     {
         (*i)++;
-        struct lexem_t lexem = get_cur_lexem(*i, NULL);
-        if (lexem.kind == OP)
+        if (is_brace(*i) == RBRAC)
         {
-            printf("Unexpected operation");
+            printf("Extra brace");
             exit(5);
         }
         node = Expr(i);
+        if(is_brace(*i) != RBRAC)
+        {
+            printf("Extra brace");
+            exit(6);
+        }
         return node;
     }
 
