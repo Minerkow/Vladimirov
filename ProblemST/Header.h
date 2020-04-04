@@ -1,3 +1,12 @@
+//
+// Created by bibi on 09.03.2020.
+//
+
+#ifndef PROBLEMLX_HEADERLX_H
+#define PROBLEMLX_HEADERLX_H
+
+#pragma once
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,9 +60,9 @@ struct node_t
     struct node_t* left;
 };
 
-struct node_t* Expr(struct lex_array_t* larr, int* i);
-struct node_t* Mult(struct lex_array_t* larr, int* i);
-struct node_t* Term(struct lex_array_t* larr, int* i);
+struct node_t* Expr(int* i);
+struct node_t* Mult(int* i);
+struct node_t* Term(int* i);
 struct node_t* Create_Node();
 int calc_result(struct node_t *top);
 int calc (int l, int r, struct node_t *top);
@@ -68,3 +77,10 @@ void print_tree (struct node_t* top);
 //expr ::= mult {+, -} expr | mult
 //mult ::= term {*, /} mult | term
 //term ::= ( expr ) | number
+
+
+
+
+/*
+void print_node (struct lexem_t lex);
+void print_tree (struct node_t* top);*/
