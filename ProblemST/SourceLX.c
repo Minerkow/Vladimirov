@@ -1,5 +1,5 @@
 //
-// Created by Minerkow on 14.03.2020.
+// Created by bibi on 18.03.2020.
 //
 
 #include "HeaderLX.h"
@@ -46,16 +46,16 @@ struct lex_array_t lex_string(const char *str) {
             int code = str[i];
             switch ( code )
             {
-                case 43: // '+' == 43
+                case '+': 
                     larr.lexems[larr.size].lex.op = ADD;
                     break;
-                case 45: //'-' == 45
+                case '-':
                     larr.lexems[larr.size].lex.op = SUB;
                     break;
-                case 42: //'*' == 42
+                case '*':
                     larr.lexems[larr.size].lex.op = MUL;
                     break;
-                case 47: //'/' == 47
+                case '/':
                     larr.lexems[larr.size].lex.op = DIV;
                 default:;
             }
@@ -69,10 +69,10 @@ struct lex_array_t lex_string(const char *str) {
             int code = str[i];
             switch (code)
             {
-                case 40://'(' == 40
+                case '(':
                     larr.lexems[larr.size].lex.b = LBRAC;
                     break;
-                case 41://')' == 41
+                case ')':
                     larr.lexems[larr.size].lex.b = RBRAC;
                     break;
                 default:;
