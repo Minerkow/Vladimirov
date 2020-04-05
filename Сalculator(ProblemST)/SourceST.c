@@ -1,4 +1,5 @@
 
+
 #include "HeaderLX.h"
 
 static struct lexem_t get_cur_lexem (int i, struct lex_array_t* ptr);
@@ -86,36 +87,35 @@ struct node_t* Expr(int* i)
     if (*i >= get_cur_size(NULL) - 1)
         return expr_left;
 
-    if (get_cur_lexem(*i, NULL).kind == OP) {
-        while (is_add_sub(*i) && get_cur_lexem(*i, NULL).kind == OP)
+    while (is_add_sub(*i) && get_cur_lexem(*i, NULL).kind == OP)
+    {
+        if (*i >= get_cur_size(NULL) - 1)
+            return expr_left;
+
+        node = Create_Node();
+        node->lexem = get_cur_lexem(*i, NULL);
+
+        (*i)++;
+
+        //printf("_%d_", get_cur_lexem(*i, NULL).kind);
+        //printf("(%d)\n", *i);
+
+        struct lexem_t lexem = get_cur_lexem(*i, NULL);
+        if (lexem.kind != NUM && lexem.kind != BRACE)
         {
-            if (*i >= get_cur_size(NULL) - 1)
-                return expr_left;
-
-            node = Create_Node();
-            node->lexem = get_cur_lexem(*i, NULL);
-
-            (*i)++;
-
-            //printf("_%d_", get_cur_lexem(*i, NULL).kind);
-            //printf("(%d)\n", *i);
-
-            struct lexem_t lexem = get_cur_lexem(*i, NULL);
-            if (lexem.kind != NUM && lexem.kind != BRACE)
-            {
-                printf("Expected expression");
-                exit(5);
-            }
-            node->left = expr_left;
-            node->right = Mult(i);
-
-            expr_left = node;
+            printf("Expected expression");
+            exit(5);
         }
-        return expr_left;
-    }
+        node->left = expr_left;
+        node->right = Mult(i);
 
+        expr_left = node;
+        }
     return expr_left;
 }
+
+
+
 
 struct node_t* Mult(int* i)
 {
@@ -124,34 +124,32 @@ struct node_t* Mult(int* i)
     if (*i >= get_cur_size(NULL) - 1)
         return mult_left;
 
-    if (get_cur_lexem(*i, NULL).kind == OP) {
-        while (is_mul_div(*i)) {
+    while (is_mul_div(*i) && get_cur_lexem(*i, NULL).kind == OP) {
 
-            if (*i >= get_cur_size(NULL) - 1)
-                return mult_left;
+        if (*i >= get_cur_size(NULL) - 1)
+            return mult_left;
 
-            node = Create_Node();
-            node->lexem = get_cur_lexem(*i, NULL);
+        node = Create_Node();
+        node->lexem = get_cur_lexem(*i, NULL);
 
-            //printf("{%d}\n", *i);
+        //printf("{%d}\n", *i);
 
-            (*i)++;
+        (*i)++;
 
-            struct lexem_t lexem = get_cur_lexem(*i, NULL);
-            if (lexem.kind != NUM && lexem.kind != BRACE)
-            {
-                   printf("Expected expression");
-                   exit(5);
-            }
-            node->left = mult_left;
-            node->right = Term(i);
-
-            mult_left = node;
+        struct lexem_t lexem = get_cur_lexem(*i, NULL);
+        if (lexem.kind != NUM && lexem.kind != BRACE)
+        {
+            printf("Expected expression");
+            exit(5);
         }
-        return mult_left;
-    }
+        node->left = mult_left;
+        node->right = Term(i);
+
+        mult_left = node;
+        }
     return mult_left;
 }
+
 
 struct node_t* Term (int* i)
 {
