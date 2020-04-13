@@ -1,6 +1,3 @@
-//
-// Created by bibi on 18.03.2020.
-//
 
 #include "HeaderLX.h"
 
@@ -22,6 +19,12 @@ static void update_variables(int variable, int value, struct variable_t* top);
 static void print_list(struct variable_t *top);
 static int find_variable(int variable, struct variable_t* ptr);
 static void print_analyzer(int*i, struct lex_array_t larr);
+static void free_list(struct variable_t *top);
+
+
+//Arithmetic sentence analysis
+//! @param[in] pointer to an array of tokens
+//! @return void
 
 void sentence_analyzer(struct lex_array_t larr)
 {
@@ -57,8 +60,14 @@ void sentence_analyzer(struct lex_array_t larr)
             }
         }
     }
+    free_list(top_vareable);
     //print_list(top_vareable);
 }
+
+//Function parses an assignment token
+//! @param[in] pointer to the item number in the token array
+//! @param[in] pointer to an array of tokens
+//! @return void
 
 static void assign_analyzer(int* i, struct lex_array_t larr)
 {
@@ -94,6 +103,12 @@ static void assign_analyzer(int* i, struct lex_array_t larr)
         exit(40);
     }
 }
+
+//Updates the list of variables
+//! @param[in] variable hash
+//! @param[in] variable value
+//! @param[in] pointer to the top of the variable list
+//! @return void
 
 static void update_variables(int variable, int value, struct variable_t* top_variable)
 {
@@ -135,6 +150,11 @@ static void update_variables(int variable, int value, struct variable_t* top_var
     }
 }
 
+//Search for a variable in the variable list
+//! @param[in] variable hash
+//! @param[in] pointer to the top of the variable list
+//! @return the value of a variable
+
 static int find_variable(int variable, struct variable_t* ptr)
 {
     static struct variable_t* top = NULL;
@@ -159,6 +179,12 @@ static int find_variable(int variable, struct variable_t* ptr)
     exit(50);
 }
 
+
+//analyzes the print command
+//! @param[in] pointer to the item number in the token array
+//! @param[in] pointer to an array of tokens
+//! @return void
+
 static void print_analyzer(int*i, struct lex_array_t larr)
 {
     (*i)++;
@@ -166,6 +192,10 @@ static void print_analyzer(int*i, struct lex_array_t larr)
     (*i)++;
     printf("Result : %d\n", value);
 }
+
+//Prints a list of variables
+//! @param[in] pointer to the top of the variable list
+//! @return void
 
 static void print_list(struct variable_t *top)
 {
@@ -223,6 +253,11 @@ static int is_brace(int i)
     return 0;
 }
 
+//Builds an expression tree and returns the result
+//! @param[in] pointer to an array of tokens
+//! @param[in] pointer to the item number in the token array
+//! @return value of expression
+
 int BuildTree (struct lex_array_t larr, int* j)
 {
     int i = *j;
@@ -242,6 +277,10 @@ int BuildTree (struct lex_array_t larr, int* j)
     //printf("%d", calc_result(top));
     //return top;
 }
+
+//Calc tree expression
+//! @param[in] pointer to the top of the tree
+//! @return value of expression
 
 int calc_result(struct node_t *top)
 {
@@ -263,6 +302,10 @@ int calc (int l, int r, struct node_t *top)
     if(top->lexem.kind == OP && top->lexem.lex.op == DIV)
         return l / r;
 }
+
+//Builds leaves of an expression tree with addition and subtraction operations
+//! @param[in] pointer to the item number in the token array
+//! @return pointer to a tree leaf
 
 struct node_t* Expr(int* i)
 {
@@ -301,6 +344,9 @@ struct node_t* Expr(int* i)
     return expr_left;
 }
 
+//Builds leaves of the expression tree with operations of multiplication and division
+//! @param[in] pointer to the item number in the token array
+//! @return pointer to a tree leaf
 
 struct node_t* Mult(int* i)
 {
@@ -337,6 +383,9 @@ struct node_t* Mult(int* i)
     return mult_left;
 }
 
+//Builds the leaves of an expression tree with numbers and variables, and also analyzes the brackets
+//! @param[in] pointer to the item number in the token array
+//! @return pointer to a tree leaf
 
 struct node_t* Term (int* i)
 {
@@ -384,6 +433,9 @@ struct node_t* Term (int* i)
     return 0;
 }
 
+//Creates a tree node
+//! @return pointer to node
+
 struct node_t* Create_Node()
 {
     struct node_t* node = (struct node_t*)calloc(1, sizeof(struct node_t));
@@ -399,6 +451,10 @@ void free_tree(struct node_t *t) {
     free_tree(t->right);
     free(t);
 }
+
+//Prints the contents of the node
+//! @param[in] token
+//! @return void
 
 void print_node (struct lexem_t lex) {
     switch (lex.kind) {
@@ -427,6 +483,11 @@ void print_node (struct lexem_t lex) {
             exit(10);
     }
 }
+
+//Prints the contents of the tree
+//! @param[in] pointer to the top of the tree
+//! @return void
+
 void print_tree (struct node_t* top) {
     if (top == NULL){
         printf ("Error: top is NULL\n");
@@ -446,4 +507,14 @@ void print_tree (struct node_t* top) {
     printf ("\n");
     print_tree (top->left);
     print_tree (top->right);
+}
+
+static void free_list(struct variable_t *top)
+{
+    while(top != NULL)
+    {
+        struct variable_t* tmp = top->next;
+        free(top);
+        top = tmp;
+    }
 }
