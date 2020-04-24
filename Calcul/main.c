@@ -4,13 +4,13 @@ enum { MAXLEN = 1024 };
 
 
 int main() {
-    FILE* f = fopen("/home/bibi/CLionProject/Vladimirov/Calculator/test.expr", "r");
+    //FILE* f = fopen("/home/bibi/CLionProject/Vladimirov/Calculator/test.expr", "r");
     assert(f);
     int res = 0;
     struct lex_array_t larr = {};
     char inp[MAXLEN] = {0};
 
-    res = fscanf( f, "%1023c", inp);
+    res = scanf("%1023c", inp);
     assert(res == 1);
 
     larr = lex_string(inp);
