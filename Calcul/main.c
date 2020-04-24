@@ -5,7 +5,7 @@ enum { MAXLEN = 1024 };
 
 int main() {
     //FILE* f = fopen("/home/bibi/CLionProject/Vladimirov/Calculator/test.expr", "r");
-    assert(f);
+    //assert(f);
     int res = 0;
     struct lex_array_t larr = {};
     char inp[MAXLEN] = {0};
