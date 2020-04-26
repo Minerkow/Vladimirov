@@ -2,10 +2,6 @@
 // Created by bibi on 18.03.2020.
 //
 
-//
-// Created by bibi on 14.03.2020.
-//
-
 #include "HeaderLX.h"
 
 static struct lexem_t get_cur_lexem (int i, struct lex_array_t* ptr);
@@ -91,24 +87,26 @@ struct node_t* Expr(int* i)
     struct node_t* expr_left = Mult(i);
     if (*i == get_cur_size(NULL) - 1)
         return expr_left;
-    (*i)++;
 
     if (get_cur_lexem(*i, NULL).kind == OP) {
-        if (is_add_sub(*i)) {
+        while (is_add_sub(*i)) {
+            if (*i == get_cur_size(NULL) - 1)
+                return expr_left;
             node = Create_Node();
             node->lexem = get_cur_lexem(*i, NULL);
             (*i)++;
-            struct lexem_t lexem = get_cur_lexem(*i, NULL);
+            printf("{%d}\n", *i);
+  /*          struct lexem_t lexem = get_cur_lexem(*i, NULL);
             if (lexem.kind != NUM && lexem.kind != BRACE)
             {
                 printf("Expected expression");
                 exit(5);
-            }
+            }*/
             node->left = expr_left;
-            node->right = Expr(i);
-            return node;
+            node->right = Mult(i);
+            expr_left = node;
         }
-        (*i)--;
+        return expr_left;
     }
 
     return expr_left;
@@ -121,8 +119,8 @@ struct node_t* Mult(int* i)
     if (*i == get_cur_size(NULL) - 1)
         return mult_left;
     (*i)++;
-    if (get_cur_lexem(*i, NULL).kind == OP) {
-        if (is_mul_div(*i)) {
+   // if (get_cur_lexem(*i, NULL).kind == OP) {
+        if (is_mul_div(*i) && get_cur_lexem(*i, NULL).kind == OP) {
             node = Create_Node();
             node->lexem = get_cur_lexem(*i, NULL);
             (*i)++;
@@ -133,11 +131,9 @@ struct node_t* Mult(int* i)
                 exit(5);
             }
             node->left = mult_left;
-            node->right = Mult(i);
+            node->right = Term(i);
             return node;
         }
-        (*i)--;
-    }
     return mult_left;
 }
 
@@ -232,7 +228,6 @@ void print_node (struct lexem_t lex) {
             exit(1);
     }
 }
-
 void print_tree (struct node_t* top) {
     if (top == NULL){
         printf ("Error: top is NULL\n");
@@ -240,22 +235,16 @@ void print_tree (struct node_t* top) {
     }
     if (top->left == NULL && top->right == NULL)
         return;
-
     print_node (top->lexem);
-
     if (top->left == NULL) {
         printf ("\n");
         return;
     }
     print_node (top->left->lexem);
-
     if (top->right == NULL)
         return;
     print_node (top->right->lexem);
-
     printf ("\n");
-
     print_tree (top->left);
     print_tree (top->right);
 }*/
-

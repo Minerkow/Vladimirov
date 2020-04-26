@@ -1,3 +1,7 @@
+//
+// Created by bibi on 09.03.2020.
+//
+
 #ifndef PROBLEMLX_HEADERLX_H
 #define PROBLEMLX_HEADERLX_H
 
@@ -10,7 +14,7 @@
 #include <string.h>
 //LX
 // lexem is operation | brace | number
-enum lexem_kind_t {  OP , BRACE, NUM = 228, VOID};
+enum lexem_kind_t {  OP , BRACE, NUM, VOID};
 
 // operation is: +, -, *, /
 enum operation_t { ADD, SUB, MUL, DIV };
@@ -33,7 +37,7 @@ struct lexem_t {
 // array of lexems
 // size: actual number of elements
 // capacity: number of additions before realloc
-    struct lex_array_t {
+struct lex_array_t {
     struct lexem_t *lexems;
     int size, capacity;
 };
@@ -67,7 +71,7 @@ struct node_t* BuildTree (struct lex_array_t larr);
 
 void print_node (struct lexem_t lex);
 void print_tree (struct node_t* top);
-#endif //PROBLEMST_HEADERST_H
+#endif //PROBLEMLX_HEADERLX_H
 
 
 //expr ::= mult {+, -} expr | mult
@@ -77,6 +81,6 @@ void print_tree (struct node_t* top);
 
 
 
-
+/*
 void print_node (struct lexem_t lex);
-void print_tree (struct node_t* top);
+void print_tree (struct node_t* top);*/
