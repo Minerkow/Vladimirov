@@ -2,7 +2,7 @@
 // Created by bibi on 18.03.2020.
 //
 
-#include "HeaderLX.h"
+#include "Calculator.h"
 
 static void swap_lexems(struct lexem_t* lexem1, struct lexem_t* lexem2)
 {
@@ -22,7 +22,8 @@ struct lex_array_t lex_string(const char *str) {
     assert(larr.lexems != NULL);
 
     int i = 0;
-    char** hash_table = NULL;
+    struct variable_t* hash_table = create_hash_table();
+    variable_value(0, 0, false, hash_table);
 
     while (str[i])
     {
@@ -63,7 +64,7 @@ struct lex_array_t lex_string(const char *str) {
             int code = str[i];
             switch ( code )
             {
-                case '+': 
+                case '+':
                     larr.lexems[larr.size].lex.op = ADD;
                     break;
                 case '-':
@@ -108,7 +109,6 @@ struct lex_array_t lex_string(const char *str) {
             int numsymbol = 0;
             int hash = 0;
             larr.lexems[larr.size].kind = VARIABLE;
-            hash_table = create_hash_table();
             char* word = (char*)calloc(MAXLENWORD + 1, sizeof(char));
             while (isalpha(str[i]))
             {
@@ -148,13 +148,6 @@ struct lex_array_t lex_string(const char *str) {
         {
             larr.lexems[larr.size].kind = COMMAND;
             larr.lexems[larr.size].lex.com = ASSIGN;
-        if ((larr.size - 1 >= 0)  &&  larr.lexems[larr.size - 1].kind == VARIABLE)
-        {
-            swap_lexems(&larr.lexems[larr.size - 1], &larr.lexems[larr.size]);
-        } else{
-            printf("Assignment ERROR");
-            exit(32);
-        }
             larr.size++;
             i++;
             continue;
@@ -170,7 +163,7 @@ struct lex_array_t lex_string(const char *str) {
         }
     }
 
-    free_hash_table(hash_table);
+    //free_hash_table(hash_table);
     return larr;
 }
 

@@ -1,236 +1,120 @@
 //
-// Created by bibi on 18.03.2020.
+// Created by Minerkow on 19.03.2020.
 //
 
-#include "HeaderLX.h"
+#ifndef PROBLEMLX_HEADERLX_H
+#define PROBLEMLX_HEADERLX_H
 
-static void swap_lexems(struct lexem_t* lexem1, struct lexem_t* lexem2)
+#pragma once
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+//LX
+// lexem is operation | brace | number
+enum lexem_kind_t {  OP , BRACE, NUM ,  VARIABLE, COMMAND};
+
+// operation is: +, -, *, /
+enum operation_t { ADD, SUB, MUL, DIV };
+
+// braces are: (, )
+enum braces_t {  LBRAC , RBRAC };
+
+//command is: print, ?, =, ;
+enum command_t { PRINT, INPUT, ASSIGN, END_COMMAND};
+
+// lexem is one of lexem kind entities
+// if (l.kind == BRACE)
+//   assert(l.lex.b == LBRAC || l.lex.b == RBRAC)
+struct lexem_t {
+    enum lexem_kind_t kind;
+    union {
+        enum operation_t op;
+        enum braces_t b;
+        enum command_t com;
+        int num;
+    } lex;
+};
+
+// array of lexems
+// size: actual number of elements
+// capacity: number of additions before realloc
+struct lex_array_t {
+    struct lexem_t *lexems;
+    int size, capacity;
+};
+//initial sentence
+enum {ISEN = 10};
+
+// initial capacity
+enum { ICAP = 10 };
+
+// string to lexem array: see Problem LX on slides
+struct lex_array_t lex_string(const char *str);
+
+// printinvoid print_lexem(struct lexem_t lxm);
+void dump_lexarray(struct lex_array_t pl);
+
+//Syntax Tree
+
+struct node_t
 {
-    struct lexem_t copy = *lexem1;
-    *lexem1 = *lexem2;
-    *lexem2 = copy;
-}
+    struct lexem_t lexem;
+    struct node_t* right;
+    struct node_t* left;
+};
 
-struct lex_array_t lex_string(const char *str) {
-    assert(str != NULL);
-
-    struct lex_array_t larr = { (struct lexem_t*)calloc(ICAP , sizeof(struct lexem_t)),
-                                0,
-                                ICAP };
-    if (larr.lexems == NULL)
-        exit(2);
-    assert(larr.lexems != NULL);
-
-    int i = 0;
-    char** hash_table = NULL;
-
-    while (str[i])
-    {
-        if (larr.size == larr.capacity ) {
-            larr.lexems = (struct lexem_t *)realloc(larr.lexems, sizeof(struct lexem_t) * (larr.capacity + 10));
-            assert(larr.lexems);
-            larr.capacity += 10;
-        }
-
-        //Read Space
-
-        if (isspace(str[i]))
-        {
-            i++;
-            continue;
-        }
-
-        //Read Numbers
-
-        if (isdigit(str[i]))
-        {
-            larr.lexems[larr.size].kind = NUM;
-            larr.lexems[larr.size].lex.num = 0;
-            while(isdigit(str[i]))
-            {
-                larr.lexems[larr.size].lex.num = larr.lexems[larr.size].lex.num * 10 + str[i] - '0';
-                i++;
-            }
-            larr.size++;
-            continue;
-        }
-
-        //Read Operation
-
-        if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '/')
-        {
-            larr.lexems[larr.size].kind = OP;
-            int code = str[i];
-            switch ( code )
-            {
-                case '+': 
-                    larr.lexems[larr.size].lex.op = ADD;
-                    break;
-                case '-':
-                    larr.lexems[larr.size].lex.op = SUB;
-                    break;
-                case '*':
-                    larr.lexems[larr.size].lex.op = MUL;
-                    break;
-                case '/':
-                    larr.lexems[larr.size].lex.op = DIV;
-                default:;
-            }
-            larr.size++;
-            i++;
-            continue;
-        }
-
-        //Read Brace
-
-        if (str[i] == '(' || str[i] == ')')
-        {
-            larr.lexems[larr.size].kind = BRACE;
-            int code = str[i];
-            switch (code)
-            {
-                case '(':
-                    larr.lexems[larr.size].lex.b = LBRAC;
-                    break;
-                case ')':
-                    larr.lexems[larr.size].lex.b = RBRAC;
-                    break;
-                default:;
-            }
-            larr.size++;
-            i++;
-            continue;
-        }
-
-        //Read Variables and Command
-        if (isalpha(str[i]))
-        {
-            int numsymbol = 0;
-            int hash = 0;
-            larr.lexems[larr.size].kind = VARIABLE;
-            hash_table = create_hash_table();
-            char* word = (char*)calloc(MAXLENWORD + 1, sizeof(char));
-            while (isalpha(str[i]))
-            {
-                hash = calc_hash(hash, numsymbol, str[i]);
-                if (numsymbol == MAXLENWORD - 1)
-                {
-                    printf("Easy, too many letters in your variable");
-                    exit(31);
-                }
-                word[numsymbol] = str[i];
-                numsymbol++;
-                i++;
-            }
-            if (!strcmp(word, "print"))
-            {
-                larr.lexems[larr.size].kind = COMMAND;
-                larr.lexems[larr.size].lex.com = PRINT;
-                larr.size++;
-                continue;
-            }
-            larr.lexems[larr.size].lex.num = check_hash_table(hash_table, hash, word);
-            larr.size++;
-            continue;
-        }
-
-        //Read Special Characters
-        if (str[i] == '?')
-        {
-            larr.lexems[larr.size].kind = COMMAND;
-            larr.lexems[larr.size].lex.com = INPUT;
-            larr.size++;
-            i++;
-            continue;
-        }
-
-        if (str[i] == '=')
-        {
-            larr.lexems[larr.size].kind = COMMAND;
-            larr.lexems[larr.size].lex.com = ASSIGN;
-        if ((larr.size - 1 >= 0)  &&  larr.lexems[larr.size - 1].kind == VARIABLE)
-        {
-            swap_lexems(&larr.lexems[larr.size - 1], &larr.lexems[larr.size]);
-        } else{
-            printf("Assignment ERROR");
-            exit(32);
-        }
-            larr.size++;
-            i++;
-            continue;
-        }
-
-        if (str[i] == ';')
-        {
-            larr.lexems[larr.size].kind = COMMAND;
-            larr.lexems[larr.size].lex.com = END_COMMAND;
-            larr.size++;
-            i++;
-            continue;
-        }
-    }
-
-    free_hash_table(hash_table);
-    return larr;
-}
-
-void
-print_op(enum operation_t opcode) {
-    switch(opcode) {
-        case ADD: printf(" PLUS"); break;
-        case SUB: printf(" MINUS"); break;
-        case MUL: printf(" MUL"); break;
-        case DIV: printf(" DIV"); break;
-        default: assert(0 && "unknown opcode");
-    }
-}
-void
-print_brace(enum braces_t bracetype){
-    switch(bracetype) {
-        case LBRAC: printf(" LBRAC"); break;
-        case RBRAC: printf(" RBRAC"); break;
-        default: assert(0 && "unknown bracket");
-    }
-}
+struct node_t* Comm(int* i);
+struct node_t* Expr(int* i);
+struct node_t* Mult(int* i);
+struct node_t* Term(int* i);
+struct node_t* Create_Node();
+int calc_result(struct node_t *top);
+int calc (int l, int r, struct node_t *top);
+void BuildTree (struct lex_array_t larr, int* j);
+void free_tree(struct node_t *t);
+void Analyzer (struct lex_array_t larr);
+void free_all(struct lex_array_t larr);
 
 
-void
-print_num(int n) {
-    printf(" NUMBER:%d", n);
-}
+void print_node (struct lexem_t lex);
+void print_tree (struct node_t* top);
 
-void
-print_variable(int n){
-    printf(" VARIABLE:%d", n);
-}
+//Hash Table
 
-void
-print_command(enum command_t command){
-    switch(command){
-        case INPUT: printf(" INPUT"); break;
-        case PRINT: printf(" PRINT"); break;
-        case ASSIGN: printf(" ASSIGN"); break;
-        case END_COMMAND: printf(" END_COMMAND"); break;
-        default: assert(0 && "unknown command");
-    }
-}
+struct variable_t* create_hash_table();
+int exponent(int number, int degree);
+int calc_hash(int hash, int numsymbol, char symbol);
+int check_hash_table(struct variable_t* hash_table, int hash, char* word);
+int variable_value(int hash, int value, bool input,  struct variable_t* ptr);
 
-void
-print_lexem(struct lexem_t lxm) {
-    switch(lxm.kind) {
-        case OP: print_op(lxm.lex.op); break;
-        case BRACE: print_brace(lxm.lex.b); break;
-        case NUM: print_num(lxm.lex.num); break;
-        case VARIABLE: print_variable(lxm.lex.num); break;
-        case COMMAND: print_command(lxm.lex.com); break;
-        default: assert(0 && "unknown lexem");
-    }
-}
+enum
+{
+    MAXLENWORD = 10,
+    LENHASHTABLE = 10000,
+    KEY = 3,
+    ALFABETLEN = 58
+};
 
-void dump_lexarray(struct lex_array_t pl) {
-    int i;
-    assert(pl.lexems != NULL);
-    for (i = 0; i < pl.size; ++i)
-        print_lexem(pl.lexems[i]);
-}
+void print_node (struct lexem_t lex);
+void print_tree (struct node_t* top);
 
+
+#endif //PROBLEMST_HEADERST_H
+
+
+//comm ::= comm(print, =) expr | expr
+//expr ::= mult {+, -} expr | mult
+//mult ::= term {*, /} mult | term
+//term ::= ( expr ) | number | ? | variable
+
+
+
+
+
+void print_node (struct lexem_t lex);
+void print_tree (struct node_t* top);

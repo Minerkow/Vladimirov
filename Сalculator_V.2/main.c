@@ -1,15 +1,16 @@
-#include "HeaderLX.h"
+#include "Calculator.h"
 
 enum { MAXLEN = 1024 };
 
 
 int main() {
-    //FILE* f = fopen("/home/bibi/CLionProject/Vladimirov/ProblemST_New/tests/009.expr", "r");
+    //FILE* f = fopen("/home/bibi/CLionProject/Vladimirov/Calculator/test.expr", "r");
+    //assert(f);
     int res = 0;
     struct lex_array_t larr = {};
     char inp[MAXLEN] = {0};
 
-    res = scanf("%1023c", inp);
+    res = scanf("%1023c", &inp);
     assert(res == 1);
 
     larr = lex_string(inp);
@@ -18,11 +19,8 @@ int main() {
         printf("ERROR\n");
         return 0;
     }
-    //dump_lexarray(larr);
+    dump_lexarray(larr);
     printf("\n");
-    sentence_analyzer(larr);
-    //struct node_t* top = BuildTree(larr);
-    free(larr.lexems);
-    //free(top);
+    Analyzer(larr);
     return 0;
 }

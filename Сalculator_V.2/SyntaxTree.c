@@ -1,221 +1,17 @@
+//
+// Created by Minerkow on 19.04.2020.
+//
 
-#include "HeaderLX.h"
-
-struct variable_t {
-    int value;
-    int hash;
-    struct variable_t* next;
-};
+#include "Calculator.h"
 
 static struct lexem_t get_cur_lexem (int i, struct lex_array_t* ptr);
 static int get_cur_size(struct lex_array_t* ptr);
-static int is_add_sub (int i);
-static int is_mul_div(int i);
+static bool is_add_sub (int i);
+static bool is_mul_div(int i);
 static int is_brace(int i);
-static int is_end_command(struct lexem_t lexem);
-static void assign_analyzer(int* i, struct lex_array_t larr);
-static int is_input(struct lexem_t lexem);
-static void update_variables(int variable, int value, struct variable_t* top);
-static void print_list(struct variable_t *top);
-static int find_variable(int variable, struct variable_t* ptr);
-static void print_analyzer(int*i, struct lex_array_t larr);
-static void free_list(struct variable_t *top);
-
-
-//Arithmetic sentence analysis
-//! @param[in] pointer to an array of tokens
-//! @return void
-
-void sentence_analyzer(struct lex_array_t larr)
-{
-    int i = 0;
-    struct variable_t* top_vareable = (struct variable_t*)calloc(1, sizeof(struct variable_t));
-    update_variables(0, 0, top_vareable);
-    find_variable(0, top_vareable);
-    while (i != larr.size)
-    {
-        if (larr.lexems[i].kind != COMMAND)
-        {
-            printf("Expected command");
-            exit(33);
-        }
-        switch (larr.lexems[i].lex.com)
-        {
-            case ASSIGN :
-                assign_analyzer(&i, larr);
-                //printf("Assign analyzer");
-                break;
-            case INPUT :
-                printf("It seems there should not be ?");
-                exit(34);
-            case PRINT :
-                print_analyzer(&i, larr);
-                break;
-            case END_COMMAND :
-                printf("It seems there should not be ;");
-                exit(35);
-            default: {
-                printf("Syntax ERROR");
-                exit(36);
-            }
-        }
-    }
-    free_list(top_vareable);
-    //print_list(top_vareable);
-}
-
-//Function parses an assignment token
-//! @param[in] pointer to the item number in the token array
-//! @param[in] pointer to an array of tokens
-//! @return void
-
-static void assign_analyzer(int* i, struct lex_array_t larr)
-{
-    (*i)++;
-    int variable = 0;
-    int value = 0;
-    if (larr.lexems[*i].kind == VARIABLE)
-    {
-        variable = larr.lexems[*i].lex.num;
-        (*i)++;
-    }else{
-        printf("Syntax ERROR");
-        exit(37);
-    }
-    if (is_input(larr.lexems[*i]))
-    {
-        printf("Pls, enter value:");
-        scanf("%d", &value);
-        printf("\n");
-        update_variables(variable, value, NULL);
-        (*i)++;
-    }else{
-        //printf("{%d}\n", *i);
-        value = BuildTree(larr, i);
-        update_variables(variable, value, NULL);
-        //printf("<%d>", *i);
-        //printf("result = %d\n", value);
-    }
-    if (is_end_command(larr.lexems[*i])) {
-        (*i)++;
-    }else{
-        printf("Expected ';'");
-        exit(40);
-    }
-}
-
-//Updates the list of variables
-//! @param[in] variable hash
-//! @param[in] variable value
-//! @param[in] pointer to the top of the variable list
-//! @return void
-
-static void update_variables(int variable, int value, struct variable_t* top_variable)
-{
-    static struct variable_t* top = NULL;
-    if (top_variable != NULL)
-    {
-        top = top_variable;
-        top->hash = -1;
-        //printf ("[%p]", top);
-        return;
-    }
-    if (top->hash == -1)
-    {
-        top->hash = variable;
-        top->value = value;
-        //printf("{%d %d}", top->value, variable);
-        return;
-    }
-    assert(top);
-    struct variable_t* copy = top;
-    while(copy != NULL)
-    {
-        //printf("<%d>", copy->hash);
-        if (copy->hash == variable)
-        {
-            copy->value = value;
-            //printf("pfff");
-            return;
-        }
-        if (copy->next == NULL)
-        {
-            copy->next = (struct variable_t *) calloc(1, sizeof(struct variable_t));
-            copy->next->value = value;
-            //printf("[%d]", value);
-            copy->next->hash = variable;
-            return;
-        }
-        copy = copy->next;
-    }
-}
-
-//Search for a variable in the variable list
-//! @param[in] variable hash
-//! @param[in] pointer to the top of the variable list
-//! @return the value of a variable
-
-static int find_variable(int variable, struct variable_t* ptr)
-{
-    static struct variable_t* top = NULL;
-    if (ptr != NULL)
-    {
-        top = ptr;
-        return 0;
-    }
-   // printf("_%d_\n", variable);
-    //print_list(top);
-    //printf("\n");
-    struct variable_t* copy = top;
-    while(copy != NULL)
-    {
-        if(copy->hash == variable) {
-            //printf("-%d-", copy->hash);
-            return copy->value;
-        }
-        copy = copy->next;
-    }
-    printf("Undeclared variable");
-    exit(50);
-}
-
-
-//analyzes the print command
-//! @param[in] pointer to the item number in the token array
-//! @param[in] pointer to an array of tokens
-//! @return void
-
-static void print_analyzer(int*i, struct lex_array_t larr)
-{
-    (*i)++;
-    int value = BuildTree(larr, i);
-    (*i)++;
-    printf("Result : %d\n", value);
-}
-
-//Prints a list of variables
-//! @param[in] pointer to the top of the variable list
-//! @return void
-
-static void print_list(struct variable_t *top)
-{
-    while(top != NULL)
-    {
-        printf("%d->", top->value);
-        struct variable_t* tmp = top->next;
-        top = tmp;
-    }
-}
-
-static int is_input(struct lexem_t lexem)
-{
-    return (lexem.kind == COMMAND && lexem.lex.com == INPUT);
-}
-
-static int is_end_command(struct lexem_t lexem)
-{
-    return (lexem.kind == COMMAND && lexem.lex.com == END_COMMAND);
-}
+static bool is_assign(int i);
+static bool is_stop(int i);
+static bool is_num_input_variable(int i);
 
 
 static struct lexem_t get_cur_lexem (int i, struct lex_array_t* ptr)
@@ -234,12 +30,12 @@ static int get_cur_size(struct lex_array_t* ptr)
     return (larr->size);
 }
 
-static int is_add_sub (int i)
+static bool is_add_sub (int i)
 {
     return (get_cur_lexem(i, NULL).lex.op == ADD || get_cur_lexem(i, NULL).lex.op == SUB);
 }
 
-static int is_mul_div(int i)
+static bool is_mul_div(int i)
 {
     return (get_cur_lexem(i, NULL).lex.op == MUL || get_cur_lexem(i, NULL).lex.op == DIV);
 }
@@ -253,59 +49,160 @@ static int is_brace(int i)
     return 0;
 }
 
-//Builds an expression tree and returns the result
-//! @param[in] pointer to an array of tokens
-//! @param[in] pointer to the item number in the token array
-//! @return value of expression
+static bool is_assign(int i)
+{
+    return (get_cur_lexem(i, NULL).kind == COMMAND && get_cur_lexem(i, NULL).lex.com == ASSIGN);
+}
 
-int BuildTree (struct lex_array_t larr, int* j)
+static bool is_stop(int i)
+{
+    struct lexem_t lexem = get_cur_lexem(i, NULL);
+    return (lexem.kind == COMMAND && (lexem.lex.com == END_COMMAND || lexem.lex.com == ASSIGN));
+}
+
+static bool is_print(int i)
+{
+    struct lexem_t lexem = get_cur_lexem(i, NULL);
+    return (lexem.kind == COMMAND && lexem.lex.com == PRINT);
+}
+
+static bool is_num_input_variable(int i)
+{
+    struct lexem_t lexem = get_cur_lexem(i, NULL);
+    bool res = (lexem.kind == COMMAND && lexem.lex.com == INPUT)
+                || (lexem.kind == VARIABLE)
+                || (lexem.kind == NUM);
+    return res;
+}
+
+void Analyzer (struct lex_array_t larr)
+{
+    int i = 0;
+    while (i < larr.size)
+    {
+        BuildTree(larr, &i);
+        i++;
+    }
+    free_all(larr);
+}
+
+void BuildTree (struct lex_array_t larr, int* j)
 {
     int i = *j;
     get_cur_lexem(0, &larr);
     get_cur_size(&larr);
-    struct node_t* top = Expr(&i);
+    struct node_t* top = Comm(&i);
+    (*j) = i;
     if (top == NULL)
     {
         printf ("Empty input");
         exit(1);
     }
-    *j = i;
-    int res = calc_result(top);
+    calc_result(top);
     free_tree(top);
-    return res;
-    //print_tree(top);
-    //printf("%d", calc_result(top));
-    //return top;
 }
-
-//Calc tree expression
-//! @param[in] pointer to the top of the tree
-//! @return value of expression
 
 int calc_result(struct node_t *top)
 {
-    if (top->left == NULL && top->right == NULL)
-        return top->lexem.lex.num;
-    int l = calc_result(top->left);
-    int r = calc_result(top->right);
+    int l = 0;
+    int r = 0;
+    if (top->lexem.kind == COMMAND && top->lexem.lex.com == PRINT)
+    {
+        printf("Result: %d", calc_result(top->left));
+        return 0;
+    }
+    if (top->lexem.kind == COMMAND && top->lexem.lex.com == ASSIGN)
+    {
+        if (top->left == NULL || top->right == NULL)
+        {
+            printf("ASSIGN Error");
+            exit(103);
+        }
+        if (top->left->lexem.kind != VARIABLE)
+        {
+            printf("ASSIGN Error");
+            exit(104);
+        }
+        int value = calc_result(top->right);
+        variable_value(top->left->lexem.lex.num, value, true, NULL);
+        return 0;
+    }
+    switch (top->lexem.kind)
+    {
+        case VARIABLE:
+            return variable_value(top->lexem.lex.num, 0, false, NULL);
+        case NUM:
+            return top->lexem.lex.num;
+        case COMMAND:
+            if (top->lexem.lex.com == INPUT)
+            {
+                int input = 0;
+                printf("pls, enter value: ");
+                scanf("%d", &input);
+                return input;
+            }
+            break;
+        default:;
+    }
+    l = calc_result(top->left);
+    r = calc_result(top->right);
     return calc(l, r, top);
 }
 
 int calc (int l, int r, struct node_t *top)
 {
-    if(top->lexem.kind == OP && top->lexem.lex.op == ADD)
-        return l + r;
-    if(top->lexem.kind == OP && top->lexem.lex.op == SUB)
-        return l - r;
-    if(top->lexem.kind == OP && top->lexem.lex.op == MUL)
-        return l * r;
-    if(top->lexem.kind == OP && top->lexem.lex.op == DIV)
-        return l / r;
+    switch (top->lexem.kind) {
+        case OP:
+            switch (top->lexem.lex.op){
+                case ADD:
+                    return l + r;
+                case SUB:
+                    return l - r;
+                case MUL:
+                    return l * r;
+                case DIV:
+                    return l / r;
+                default:
+                    printf("Error operation");
+                    exit(101);
+            }
+        default:
+            printf("Error");
+            exit(102);
+    }
 }
 
-//Builds leaves of an expression tree with addition and subtraction operations
-//! @param[in] pointer to the item number in the token array
-//! @return pointer to a tree leaf
+struct node_t* Comm(int* i)
+{
+    struct node_t* node = NULL;
+    struct node_t* comm_left = NULL;
+    if (is_print(*i))
+    {
+        node = Create_Node();
+        node->lexem = get_cur_lexem(*i, NULL);
+        //print_node(get_cur_lexem(*i, NULL));
+        (*i)++;
+        node->left = Expr(i);
+        node->right = NULL;
+        return node;
+    }
+    comm_left = Expr(i);
+    //print_node(comm_left->lexem);
+    if (get_cur_lexem(*i, NULL).lex.com == END_COMMAND && get_cur_lexem(*i, NULL).kind == COMMAND)
+        return comm_left;
+    if(is_assign(*i)) {
+        node = Create_Node();
+        node->lexem = get_cur_lexem(*i, NULL);
+        //print_node(node->lexem);
+        (*i)++;
+        //printf ("_%d_", (*i));
+        node->left = comm_left;
+        node->right = Expr(i);
+        //print_node(node->right->lexem);
+        return node;
+    }
+    return comm_left;
+}
 
 struct node_t* Expr(int* i)
 {
@@ -340,13 +237,10 @@ struct node_t* Expr(int* i)
         node->right = Mult(i);
 
         expr_left = node;
-        }
+    }
     return expr_left;
 }
 
-//Builds leaves of the expression tree with operations of multiplication and division
-//! @param[in] pointer to the item number in the token array
-//! @return pointer to a tree leaf
 
 struct node_t* Mult(int* i)
 {
@@ -379,29 +273,22 @@ struct node_t* Mult(int* i)
         node->right = Term(i);
 
         mult_left = node;
-        }
+    }
     return mult_left;
 }
-
-//Builds the leaves of an expression tree with numbers and variables, and also analyzes the brackets
-//! @param[in] pointer to the item number in the token array
-//! @return pointer to a tree leaf
 
 struct node_t* Term (int* i)
 {
     struct node_t* node = NULL;
-    if (get_cur_lexem(*i, NULL).kind == VARIABLE)
-    {
-        node = Create_Node();
-        node->lexem.kind = NUM;
-        node->lexem.lex.num = find_variable(get_cur_lexem(*i, NULL).lex.num, NULL);
-        (*i)++;
-        return node;
-    }
-    if (get_cur_lexem(*i, NULL).kind == NUM)
+    if (is_num_input_variable(*i))
     {
         node = Create_Node();
         node->lexem = get_cur_lexem(*i, NULL);
+        if (get_cur_lexem(*i + 1, NULL).kind == NUM)
+        {
+            printf("Two numbers in a row");
+            exit(9);
+        }
         (*i)++;
         return node;
     }
@@ -415,7 +302,7 @@ struct node_t* Term (int* i)
             exit(5);
         }
         node = Expr(i);
-       if (is_brace(*i) != RBRAC)
+        if (is_brace(*i) != RBRAC)
         {
             printf("Extra brace");
             exit(6);
@@ -433,9 +320,6 @@ struct node_t* Term (int* i)
     return 0;
 }
 
-//Creates a tree node
-//! @return pointer to node
-
 struct node_t* Create_Node()
 {
     struct node_t* node = (struct node_t*)calloc(1, sizeof(struct node_t));
@@ -452,9 +336,13 @@ void free_tree(struct node_t *t) {
     free(t);
 }
 
-//Prints the contents of the node
-//! @param[in] token
-//! @return void
+
+
+
+
+
+
+
 
 void print_node (struct lexem_t lex) {
     switch (lex.kind) {
@@ -479,14 +367,29 @@ void print_node (struct lexem_t lex) {
         case NUM:
             printf ("%d ", lex.lex.num);
             break;
+        case VARIABLE:
+            printf ("var_%d ", lex.lex.num);
+            break;
+        case COMMAND:
+            switch (lex.lex.com){
+                case PRINT:
+                    printf("PRINT ");
+                    break;
+                case INPUT:
+                    printf("INPUT ");
+                    break;
+                case ASSIGN:
+                    printf("ASSIGN ");
+                    break;
+                case END_COMMAND:
+                    printf("END_COMMAND ");
+                    break;
+            }
+            break;
         default:
-            exit(10);
+            exit(2);
     }
 }
-
-//Prints the contents of the tree
-//! @param[in] pointer to the top of the tree
-//! @return void
 
 void print_tree (struct node_t* top) {
     if (top == NULL){
@@ -495,26 +398,30 @@ void print_tree (struct node_t* top) {
     }
     if (top->left == NULL && top->right == NULL)
         return;
+
     print_node (top->lexem);
+
     if (top->left == NULL) {
-        printf ("\n");
+        printf ("NULL\n");
         return;
     }
     print_node (top->left->lexem);
+
     if (top->right == NULL)
+    {
+        printf("NULL ");
         return;
+    }
     print_node (top->right->lexem);
+
     printf ("\n");
+
     print_tree (top->left);
     print_tree (top->right);
 }
 
-static void free_list(struct variable_t *top)
+void free_all(struct lex_array_t larr)
 {
-    while(top != NULL)
-    {
-        struct variable_t* tmp = top->next;
-        free(top);
-        top = tmp;
-    }
+    free(larr.lexems);
+    variable_value(-1, 0, false, NULL);
 }
